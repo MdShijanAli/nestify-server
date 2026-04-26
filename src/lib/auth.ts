@@ -37,11 +37,24 @@ async function sendEmail(options: {
       },
     );
 
-    console.log("✅ Email sent via Brevo API:", response.data?.messageId);
+    console.log("✅ Email sent via Brevo API:", {
+      to: options.to,
+      subject: options.subject,
+      messageId: response.data?.messageId,
+    });
     return response.data;
   } catch (error: any) {
-    console.error("❌ Brevo Email API Error:", error?.response?.data || error);
-    throw new Error("Failed to send email");
+    const providerError = {
+      status: error?.response?.status,
+      data: error?.response?.data,
+      message: error?.message,
+      to: options.to,
+      subject: options.subject,
+    };
+    console.error("❌ Brevo Email API Error:", providerError);
+    throw new Error(
+      `Failed to send email via Brevo: ${JSON.stringify(providerError)}`,
+    );
   }
 }
 
@@ -92,6 +105,10 @@ export const auth = betterAuth({
   emailVerification: {
     sendOnSignUp: true,
     sendVerificationEmail: async ({ user, url, token }) => {
+      console.log("[AUTH] Triggering verification email", {
+        email: user.email,
+      });
+
       const verificationUrl = `${envVars.APP_URL}/verify-email?token=${token}`;
 
       const htmlTemplate = `

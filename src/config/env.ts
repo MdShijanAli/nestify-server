@@ -52,8 +52,8 @@ const loadEnvVariables = (): EnvConfig => {
     BREVO_API_KEY: process.env.BREVO_API_KEY || "",
     APP_USER: process.env.APP_USER || "",
     APP_URL: process.env.APP_URL || "https://buddy-script-app.netlify.app",
-    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
-    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || "",
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || "",
   };
 };
 
