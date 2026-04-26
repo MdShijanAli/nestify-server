@@ -20,29 +20,59 @@ const SignUpUserWithEmail = async (
       data: result.user,
     });
   } catch (error) {
+    console.error("[AUTH_CONTROLLER] Signup error:", error);
     if (error instanceof ZodError) {
+      const formattedErrors = error.issues.map((issue) => ({
+        field: issue.path.join("."),
+        message: issue.message,
+        code: issue.code,
+      }));
+
       res.status(400).json({
         success: false,
-        message: "Validation failed",
-        errors: error.errors.map((err) => ({
-          field: err.path.join("."),
-          message: err.message,
-        })),
+        message: "Validation failed. Please check the highlighted fields.",
+        errors: formattedErrors,
       });
       return;
     }
 
+    const err = error as {
+      message?: string;
+      code?: string;
+      statusCode?: number;
+      body?: { code?: string; message?: string };
+    };
+
+    const duplicateCodes = [
+      "EMAIL_ALREADY_EXISTS",
+      "USER_ALREADY_EXISTS",
+      "UNIQUE_CONSTRAINT_FAILED",
+    ];
+
+    const duplicateFromCode =
+      (err.code && duplicateCodes.includes(err.code)) ||
+      (err.body?.code && duplicateCodes.includes(err.body.code));
+
+    const duplicateFromMessage =
+      (typeof err.message === "string" &&
+        /already\s*exists|already\s*registered|unique\s*constraint/i.test(
+          err.message,
+        )) ||
+      (typeof err.body?.message === "string" &&
+        /already\s*exists|already\s*registered|unique\s*constraint/i.test(
+          err.body.message,
+        ));
+
     // Handle duplicate email error (409 - Conflict)
-    if (error instanceof Error && error.message.includes("unique constraint")) {
+    if (duplicateFromCode || duplicateFromMessage || err.statusCode === 409) {
       res.status(409).json({
         success: false,
-        message: "Email already registered",
+        message: "This Email already registered",
       });
       return;
     }
 
     // Handle generic errors (500 - Internal Server Error)
-    console.error("[AUTH_CONTROLLER] Signup error:", error);
     res.status(500).json({
       success: false,
       message: "Registration failed. Please try again later.",
