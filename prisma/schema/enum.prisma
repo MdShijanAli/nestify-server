@@ -1,0 +1,45 @@
+enum AppRole {
+    admin
+    agent
+    user
+}
+
+enum PropertyType {
+    apartment
+    house
+    commercial
+    land
+    townhouse
+    penthouse
+}
+
+enum PropertyStatus {
+    for_sale
+    for_rent
+    sold
+}
+
+enum LeadStatus {
+    new
+    contacted
+    closed
+}
+
+enum BookingStatus {
+    confirmed
+    cancelled
+}
+
+enum VisitStatus {
+    scheduled
+    rescheduled
+    cancelled
+    completed
+}
+
+enum NotificationType {
+    visit
+    lead
+    booking
+    system
+}

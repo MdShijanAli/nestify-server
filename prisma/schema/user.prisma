@@ -1,7 +1,12 @@
 model User {
     id            String    @id
     name          String
+    first_name    String
+    last_name     String
     email         String
+    phone         String?
+    isActive      Boolean   @default(true)
+    role          AppRole   @default(user)
     emailVerified Boolean   @default(false)
     image         String?
     createdAt     DateTime  @default(now())

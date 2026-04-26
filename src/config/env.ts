@@ -9,6 +9,11 @@ interface EnvConfig {
   CLIENT_URL: string;
   BETTER_AUTH_SECRET: string;
   BETTER_AUTH_URL: string;
+  BREVO_API_KEY: string;
+  APP_USER: string;
+  APP_URL: string;
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
 }
 
 const loadEnvVariables = (): EnvConfig => {
@@ -19,6 +24,11 @@ const loadEnvVariables = (): EnvConfig => {
     "NODE_ENV",
     "PORT",
     "CLIENT_URL",
+    "BREVO_API_KEY",
+    "APP_USER",
+    "APP_URL",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
   ];
 
   requiredEnvVars.forEach((varName) => {
@@ -39,6 +49,11 @@ const loadEnvVariables = (): EnvConfig => {
     BETTER_AUTH_URL:
       process.env.BETTER_AUTH_URL ||
       "https://buddy-script-server-oerv.onrender.com",
+    BREVO_API_KEY: process.env.BREVO_API_KEY || "",
+    APP_USER: process.env.APP_USER || "",
+    APP_URL: process.env.APP_URL || "https://buddy-script-app.netlify.app",
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
   };
 };
 

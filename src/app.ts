@@ -2,6 +2,7 @@ import express, { type Application } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import { envVars } from "./config/env";
+import { AuthRoutes } from "./modules/auth/auth.route";
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.use(
 
 app.use(express.json());
 
+app.use("/api/auth", AuthRoutes);
 // app.use("/api/users", UserRoutes);
 
 app.use("/api/health", (req, res) => {
