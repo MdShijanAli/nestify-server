@@ -1,6 +1,24 @@
+import type { IncomingHttpHeaders } from "node:http";
 import { auth } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
 import type { LoginPayload, SignUpPayload } from "./auth.schema";
+
+const buildHeadersInit = (headers: IncomingHttpHeaders): Record<string, string> => {
+  const normalizedHeaders: Record<string, string> = {};
+
+  for (const [key, value] of Object.entries(headers)) {
+    if (typeof value === "string") {
+      normalizedHeaders[key] = value;
+      continue;
+    }
+
+    if (Array.isArray(value)) {
+      normalizedHeaders[key] = value.join(",");
+    }
+  }
+
+  return normalizedHeaders;
+};
 
 const SignUpUserWithEmail = async (payload: SignUpPayload) => {
   try {
@@ -62,7 +80,17 @@ const SignInUserWithEmail = async (payload: LoginPayload) => {
   }
 };
 
+const Logout = async (headers: IncomingHttpHeaders) => {
+  try {
+    await auth.api.signOut({ headers: buildHeadersInit(headers) });
+  } catch (error) {
+    console.error("[AUTH_SERVICE] Logout error:", error);
+    throw error;
+  }
+};
+
 export const AuthService = {
   SignUpUserWithEmail,
   SignInUserWithEmail,
+  Logout,
 };

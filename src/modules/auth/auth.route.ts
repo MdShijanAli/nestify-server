@@ -15,5 +15,6 @@ router.post(
   validateRequest(loginSchema),
   AuthController.SignInUserWithEmail,
 );
+router.post("/logout", AuthController.Logout);
 
 export const AuthRoutes = router;

@@ -25,7 +25,16 @@ const SignInUserWithEmail = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const Logout = catchAsync(async (req: Request, res: Response) => {
+  await AuthService.Logout(req.headers);
+  res.status(200).json({
+    success: true,
+    message: "User logged out successfully.",
+  });
+});
+
 export const AuthController = {
   SignUpUserWithEmail,
   SignInUserWithEmail,
+  Logout,
 };
