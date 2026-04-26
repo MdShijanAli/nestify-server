@@ -28,4 +28,12 @@ export const signupSchema = z.object({
   callbackURL: z.string().url("Invalid callback URL").optional(),
 });
 
+export const loginSchema = z.object({
+  email: z.string().email("Invalid email address").toLowerCase().trim(),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  rememberMe: z.boolean().optional().default(false),
+  callbackURL: z.string().url("Invalid callback URL").optional(),
+});
+
 export type SignUpPayload = z.infer<typeof signupSchema>;
+export type LoginPayload = z.infer<typeof loginSchema>;

@@ -1,6 +1,6 @@
 import { auth } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
-import type { SignUpPayload } from "./auth.schema";
+import type { LoginPayload, SignUpPayload } from "./auth.schema";
 
 const SignUpUserWithEmail = async (payload: SignUpPayload) => {
   try {
@@ -44,6 +44,25 @@ const SignUpUserWithEmail = async (payload: SignUpPayload) => {
   }
 };
 
+const SignInUserWithEmail = async (payload: LoginPayload) => {
+  try {
+    const data = await auth.api.signInEmail({
+      body: {
+        email: payload.email,
+        password: payload.password,
+        rememberMe: payload.rememberMe,
+        callbackURL: payload.callbackURL,
+      },
+    });
+
+    return data;
+  } catch (error) {
+    console.error("[AUTH_SERVICE] Signin error:", error);
+    throw error;
+  }
+};
+
 export const AuthService = {
   SignUpUserWithEmail,
+  SignInUserWithEmail,
 };

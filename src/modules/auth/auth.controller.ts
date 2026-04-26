@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { ZodError } from "zod";
-import { signupSchema } from "./auth.schema";
+import { loginSchema, signupSchema } from "./auth.schema";
 import { AuthService } from "./auth.service";
 
 const SignUpUserWithEmail = async (
@@ -84,6 +84,31 @@ const SignUpUserWithEmail = async (
   }
 };
 
+const SignInUserWithEmail = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const validatedData = loginSchema.parse(req.body);
+    const result = await AuthService.SignInUserWithEmail(validatedData);
+
+    console.log("[AUTH_CONTROLLER] Signin successful:", result);
+    res.status(200).json({
+      success: true,
+      message: "User signed in successfully.",
+      data: result,
+    });
+  } catch (error) {
+    console.error("[AUTH_CONTROLLER] Signin error:", error);
+    res.status(400).json({
+      success: false,
+      message: "Invalid email or password.",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
 export const AuthController = {
   SignUpUserWithEmail,
+  SignInUserWithEmail,
 };
