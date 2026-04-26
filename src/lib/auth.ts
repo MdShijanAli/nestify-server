@@ -96,6 +96,52 @@ export const auth = betterAuth({
     enabled: true,
     autoSignIn: false,
     requireEmailVerification: true,
+    onPasswordReset: async ({ user }) => {
+      const htmlTemplate = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Password Updated Successfully</title>
+        </head>
+        <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f4f7fa;">
+          <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f4f7fa;">
+            <tr>
+              <td style="padding: 40px 20px;">
+                <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">
+                  <tr>
+                    <td style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); padding: 36px 30px; text-align: center;">
+                      <h1 style="margin: 0; color: #ffffff; font-size: 26px; font-weight: 700;">Password Updated</h1>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 42px 34px;">
+                      <p style="margin: 0 0 16px; color: #1f2937; font-size: 16px;">Hello,</p>
+                      <p style="margin: 0 0 18px; color: #4b5563; font-size: 15px; line-height: 1.7;">
+                        Your Nestify account password was changed successfully.
+                      </p>
+                      <p style="margin: 0 0 18px; color: #4b5563; font-size: 15px; line-height: 1.7;">
+                        If this was you, no further action is needed.
+                        If you did not perform this action, please secure your account immediately and contact support.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `;
+
+      await sendEmail({
+        to: user.email,
+        subject: "Password changed successfully - Nestify Real Estate",
+        text: "Your password was changed successfully. If this wasn't you, please contact support immediately.",
+        html: htmlTemplate,
+      });
+    },
   },
 
   // ------------------------
@@ -244,8 +290,57 @@ export const auth = betterAuth({
 
   plugins: [
     emailOTP({
+      otpLength: 6,
       async sendVerificationOTP({ email, otp, type }) {
-        const htmlTemplate = `
+        const isForgotPassword = type === "forget-password";
+
+        const htmlTemplate = isForgotPassword
+          ? `
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Password Reset Code</title>
+          </head>
+          <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f4f7fa;">
+            <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f4f7fa;">
+              <tr>
+                <td style="padding: 40px 20px;">
+                  <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">
+                    <tr>
+                      <td style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); padding: 40px 30px; text-align: center;">
+                        <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">
+                          Reset Your Password
+                        </h1>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 50px 40px; text-align: center;">
+                        <h2 style="margin: 0 0 18px; color: #1a202c; font-size: 24px; font-weight: 600;">
+                          Password Reset Verification Code
+                        </h2>
+                        <p style="margin: 0 0 30px; color: #4a5568; font-size: 16px; line-height: 1.6;">
+                          Use this 6-digit code to reset your Nestify account password:
+                        </p>
+                        <div style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); border-radius: 12px; padding: 30px; margin: 30px 0; box-shadow: 0 4px 12px rgba(185, 28, 28, 0.3);">
+                          <p style="margin: 0; color: #ffffff; font-size: 42px; font-weight: 700; letter-spacing: 8px; font-family: 'Courier New', monospace;">
+                            ${otp}
+                          </p>
+                        </div>
+                        <p style="margin: 20px 0 0; color: #718096; font-size: 14px; line-height: 1.6;">
+                          This code will expire in <strong>10 minutes</strong>.
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </body>
+          </html>
+        `
+          : `
           <!DOCTYPE html>
           <html lang="en">
           <head>
@@ -338,10 +433,18 @@ export const auth = betterAuth({
           </html>
           `;
 
+        const subject = isForgotPassword
+          ? "Reset your password - OTP code"
+          : "Your verification code - Nestify Real Estate 🏠";
+
+        const text = isForgotPassword
+          ? `Use this OTP to reset your password: ${otp}. This code expires in 10 minutes.`
+          : `Your Nestify Real Estate 🏠 verification code is: ${otp}\n\nThis code will expire in 10 minutes.\n\nIf you didn't request this code, please ignore this email.\n\n© ${new Date().getFullYear()} Nestify Real Estate 🏠. All rights reserved.`;
+
         await sendEmail({
           to: email,
-          subject: `🔐 Your Verification Code - Nestify Real Estate 🏠`,
-          text: `Your Nestify Real Estate 🏠 verification code is: ${otp}\n\nThis code will expire in 10 minutes.\n\nIf you didn't request this code, please ignore this email.\n\n© ${new Date().getFullYear()} Nestify Real Estate 🏠. All rights reserved.`,
+          subject,
+          text,
           html: htmlTemplate,
         });
 

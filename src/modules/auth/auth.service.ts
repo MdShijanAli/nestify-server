@@ -1,7 +1,15 @@
 import type { IncomingHttpHeaders } from "node:http";
 import { auth } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
-import type { LoginPayload, SignUpPayload } from "./auth.schema";
+import type {
+  ChangePasswordPayload,
+  ForgotPasswordPayload,
+  LoginPayload,
+  ResendVerificationEmailPayload,
+  ResetPasswordPayload,
+  SignUpPayload,
+  VerifyForgotPasswordOtpPayload,
+} from "./auth.schema";
 
 const buildHeadersInit = (headers: IncomingHttpHeaders): Record<string, string> => {
   const normalizedHeaders: Record<string, string> = {};
@@ -80,6 +88,111 @@ const SignInUserWithEmail = async (payload: LoginPayload) => {
   }
 };
 
+const ForgotPassword = async (payload: ForgotPasswordPayload) => {
+  try {
+    const existingUser = await prisma.user.findUnique({
+      where: { email: payload.email },
+      select: { id: true },
+    });
+
+    if (!existingUser) {
+      const notFoundError = new Error("No account found with this email address");
+      (notFoundError as Error & { code?: string; statusCode?: number }).code =
+        "EMAIL_NOT_FOUND";
+      (
+        notFoundError as Error & { code?: string; statusCode?: number }
+      ).statusCode = 404;
+      throw notFoundError;
+    }
+
+    const data = await auth.api.requestPasswordResetEmailOTP({
+      body: {
+        email: payload.email,
+      },
+    });
+
+    return data;
+  } catch (error) {
+    console.error("[AUTH_SERVICE] Forgot password error:", error);
+    throw error;
+  }
+};
+
+const VerifyForgotPasswordOTP = async (
+  payload: VerifyForgotPasswordOtpPayload,
+) => {
+  try {
+    const data = await auth.api.checkVerificationOTP({
+      body: {
+        email: payload.email,
+        otp: payload.otp,
+        type: "forget-password",
+      },
+    });
+
+    return data;
+  } catch (error) {
+    console.error("[AUTH_SERVICE] Verify forgot-password OTP error:", error);
+    throw error;
+  }
+};
+
+const ResetPassword = async (payload: ResetPasswordPayload) => {
+  try {
+    const data = await auth.api.resetPasswordEmailOTP({
+      body: {
+        email: payload.email,
+        otp: payload.otp,
+        password: payload.newPassword,
+      },
+    });
+
+    return data;
+  } catch (error) {
+    console.error("[AUTH_SERVICE] Reset password error:", error);
+    throw error;
+  }
+};
+
+const ChangePassword = async (
+  payload: ChangePasswordPayload,
+  headers: IncomingHttpHeaders,
+) => {
+  try {
+    const data = await auth.api.changePassword({
+      body: {
+        currentPassword: payload.currentPassword,
+        newPassword: payload.newPassword,
+        revokeOtherSessions: payload.revokeOtherSessions,
+      },
+      headers: buildHeadersInit(headers),
+    });
+
+    return data;
+  } catch (error) {
+    console.error("[AUTH_SERVICE] Change password error:", error);
+    throw error;
+  }
+};
+
+const ResendVerificationEmail = async (
+  payload: ResendVerificationEmailPayload,
+) => {
+  try {
+    const data = await auth.api.sendVerificationEmail({
+      body: {
+        email: payload.email,
+        callbackURL: payload.callbackURL,
+      },
+    });
+
+    return data;
+  } catch (error) {
+    console.error("[AUTH_SERVICE] Resend verification email error:", error);
+    throw error;
+  }
+};
+
 const Logout = async (headers: IncomingHttpHeaders) => {
   try {
     await auth.api.signOut({ headers: buildHeadersInit(headers) });
@@ -92,5 +205,10 @@ const Logout = async (headers: IncomingHttpHeaders) => {
 export const AuthService = {
   SignUpUserWithEmail,
   SignInUserWithEmail,
+  ForgotPassword,
+  VerifyForgotPasswordOTP,
+  ResetPassword,
+  ChangePassword,
+  ResendVerificationEmail,
   Logout,
 };

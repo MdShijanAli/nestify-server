@@ -57,6 +57,14 @@ export const globalErrorHandler: ErrorRequestHandler = (
     return;
   }
 
+  if (err.code === "EMAIL_NOT_FOUND" || err.statusCode === 404) {
+    res.status(404).json({
+      success: false,
+      message: err.message || "No account found with this email address",
+    });
+    return;
+  }
+
   if (err.statusCode === 401 || err.statusCode === 403) {
     res.status(err.statusCode).json({
       success: false,
