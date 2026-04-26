@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import cors from "cors";
 import { envVars } from "./config/env";
 import { AuthRoutes } from "./modules/auth/auth.route";
+import { globalErrorHandler } from "./middlewares/globalErrorHandler";
+import { notFound } from "./middlewares/notFound";
 
 dotenv.config();
 
@@ -30,8 +32,8 @@ app.get("/", (req, res) => {
   res.send("Welcome to the Blog Management API");
 });
 
-// app.use(errorHandler);
-// app.use(notFoundHandler);
+app.use(notFound);
+app.use(globalErrorHandler);
 export const PORT = envVars.PORT;
 
 export default app;

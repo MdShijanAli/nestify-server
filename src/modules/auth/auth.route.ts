@@ -1,9 +1,19 @@
 import { Router } from "express";
 import { AuthController } from "./auth.controller";
+import { validateRequest } from "../../middlewares/validateRequest";
+import { loginSchema, signupSchema } from "./auth.schema";
 
 const router = Router();
 
-router.post("/signup", AuthController.SignUpUserWithEmail);
-router.post("/signin", AuthController.SignInUserWithEmail);
+router.post(
+  "/signup",
+  validateRequest(signupSchema),
+  AuthController.SignUpUserWithEmail,
+);
+router.post(
+  "/signin",
+  validateRequest(loginSchema),
+  AuthController.SignInUserWithEmail,
+);
 
 export const AuthRoutes = router;
