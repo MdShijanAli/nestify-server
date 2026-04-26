@@ -1,14 +1,7 @@
 import express, { type Application } from "express";
 import dotenv from "dotenv";
-// import { toNodeHandler } from "better-auth/node";
-// import { auth } from "./lib/auth";
 import cors from "cors";
-// import errorHandler from "./middlewares/globalErrorHandler";
-// import { notFoundHandler } from "./middlewares/notFound";
-// import {
-//   betterAuthMiddleware,
-//   betterAuthErrorHandler,
-// } from "./middlewares/betterAuthErrorHandler";
+import { envVars } from "./config/env";
 
 dotenv.config();
 
@@ -16,7 +9,7 @@ const app: Application = express();
 
 app.use(
   cors({
-    origin: (process.env.CLIENT_URL || "http://localhost:3000").trim(),
+    origin: (envVars.CLIENT_URL || "http://localhost:3000").trim(),
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -24,14 +17,6 @@ app.use(
 );
 
 app.use(express.json());
-
-// app.use("/api/auth", betterAuthMiddleware, async (req, res, next) => {
-//   try {
-//     await toNodeHandler(auth)(req, res);
-//   } catch (error: any) {
-//     betterAuthErrorHandler(error, req, res, next);
-//   }
-// });
 
 // app.use("/api/users", UserRoutes);
 
@@ -45,6 +30,6 @@ app.get("/", (req, res) => {
 
 // app.use(errorHandler);
 // app.use(notFoundHandler);
-export const PORT = process.env.PORT || 5000;
+export const PORT = envVars.PORT;
 
 export default app;

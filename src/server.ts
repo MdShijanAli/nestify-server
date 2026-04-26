@@ -1,9 +1,9 @@
 import app, { PORT } from "./app";
-// import { prisma } from "./lib/prisma";
+import { prisma } from "./lib/prisma";
 
 async function main() {
   try {
-    // await prisma.$connect();
+    await prisma.$connect();
     console.log("Database connected successfully.");
 
     app.listen(PORT, () => {
